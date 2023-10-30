@@ -94,7 +94,7 @@ HVpower( 0, 5, 1)
 Vplus=float(input("digite de quanto em quanto a tensão deve variar: "))
 events_num=int(Vstop//Vplus)+1
 
-#tempo=(4*Vplus)/5 #pois com 4 segundos da pra variar 5 Volts e fazer uma medida com tranquilidade, mas da pra melhorar esse tempo ai!!
+#tempo=(4*Vplus)/5 #pois com 4 segundos da pra variar 5 Volts e fazer uma medida com tranquilidade
 
 tempo=2
 
@@ -107,7 +107,7 @@ Vput=0
 event=0
 while(Vput<=Vstop):
 
-	while(len(str(Current_list[event]))<4):
+	while(len(str(Current_list[event]))<6):
 
 		init(dev)
 		resp=measure(dev)
