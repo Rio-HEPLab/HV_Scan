@@ -110,8 +110,6 @@ while(Vput<=Vstop):
 	init(dev)
 	resp=measure(dev)
 	Current_list[event]=resp[0:14]
-
-	#picoamperimetro entra aqui
 	
 	Voltage_list[event]=Vput #depois da pra tentar usar a tensão de fato medida pela fonte
 	Vput=Vput+Vplus
