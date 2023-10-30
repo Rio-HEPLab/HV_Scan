@@ -44,8 +44,34 @@ def HVpower(BoardNum, Channel, Power):
 	finally:
 		deinit_system(handle=handle)
 
+def write( dev, cmd ):
+    dev.write( ( cmd+"\n" ).encode("UTF-8") )
+    time.sleep(tempo_amperimetro)
 
 
+
+def read( dev, cmd ):
+    dev.write( ( cmd+"\n" ).encode("UTF-8") )
+    resp=dev.readline()
+    time.sleep(tempo_amperimetro)
+    return resp
+
+
+def init( dev ):   
+    write( dev, "*RST" )   
+    write( dev, "SYST:ZCH ON" )   
+    write( dev, "CURR:RANG 2e-9" )   
+    write( dev, "INIT" )   
+    write( dev, "SYST:ZCOR:ACQ" )   
+    write( dev, "SYST:ZCOR ON" )   
+    write( dev, "CURR:RANG:AUTO ON" )
+
+
+def measure( dev ):
+    write( dev, "SYST:ZCH OFF" )
+    resp = read( dev, "READ?" )   
+    write( dev, "SYST:ZCH ON" )
+    return resp
 
 
 if __name__ == '__main__':
@@ -58,6 +84,8 @@ if __name__ == '__main__':
 
 file_name=input("digite o nome do arquivo texto (sem a extensao): ")
 
+dev=serial.Serial("/dev/ttyUSB0", 9600, timeout=1)
+
 Vstop=float(input("digite o valor de parada: "))
 
 SetHV( 0, 5, 0)
@@ -66,7 +94,11 @@ HVpower( 0, 5, 1)
 Vplus=float(input("digite de quanto em quanto a tensão deve variar: "))
 events_num=int(Vstop//Vplus)+1
 
-tempo=(4*Vplus)/5 #pois com 4 segundos da pra variar 5 Volts e fazer uma medida com tranquilidade, mas da pra melhorar esse tempo ai!!
+#tempo=(4*Vplus)/5 #pois com 4 segundos da pra variar 5 Volts e fazer uma medida com tranquilidade, mas da pra melhorar esse tempo ai!!
+
+tempo=2
+
+tempo_amperimetro=1
 
 Voltage_list=list(range(events_num))
 Current_list=list(range(events_num))
@@ -75,23 +107,26 @@ Vput=0
 event=0
 while(Vput<=Vstop):
 
+	init(dev)
+	resp=measure(dev)
+	Current_list[event]=resp[0:14]
+
 	#picoamperimetro entra aqui
-
-    time.sleep(tempo)
-
-    Voltage_list[event]=Vput #depois da pra tentar usar a tensão de fato medida pela fonte 
-
-    SetHV( 0, 5, Vput)
-    Vput=Vput+Vplus
-    event=event+1
+	
+	Voltage_list[event]=Vput #depois da pra tentar usar a tensão de fato medida pela fonte
+	Vput=Vput+Vplus
+	SetHV( 0, 5, Vput)
+	time.sleep(tempo)
+	
+	event=event+1
 print("o loop acabou.")
 
 time.sleep(tempo)
 HVpower( 0, 5, 0)
 SetHV( 0, 5, 0)
 
-print(Voltage_list) #teste
-print(Current_list) #teste
+#print(Voltage_list) #teste
+#print(Current_list) #teste
 
 a=0
 b=0
@@ -103,7 +138,7 @@ with open(file_name+".txt", "w") as arquivo:
         arquivo.write(str(Voltage_list[a])+" ")
         a=a+1
         
-    arquivo.write("\nCorrentes: ")
+    arquivo.write("\n\nCorrentes: ")
 
     while(b<events_num):
         arquivo.write(str(Current_list[b])+" ")
