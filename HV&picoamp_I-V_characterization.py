@@ -98,7 +98,7 @@ events_num=int(Vstop//Vplus)+1
 
 tempo=2
 
-tempo_amperimetro=1
+tempo_amperimetro=0.5
 
 Voltage_list=list(range(events_num))
 Current_list=list(range(events_num))
@@ -107,9 +107,11 @@ Vput=0
 event=0
 while(Vput<=Vstop):
 
-	init(dev)
-	resp=measure(dev)
-	Current_list[event]=resp[0:14]
+	while(len(str(Current_list[event]))<4):
+
+		init(dev)
+		resp=measure(dev)
+		Current_list[event]=resp[0:14]
 	
 	Voltage_list[event]=Vput #depois da pra tentar usar a tensão de fato medida pela fonte
 	Vput=Vput+Vplus
